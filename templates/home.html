@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}homepage{% endblock %}
+{% block content %}
+<h1>Select a Survey</h1>
+<form method="post">
+    {% for survey in surveys %}
+    <input type="radio" name="selected_survey" value="{{survey}}" required>
+    <label for="{{survey}}" >{{survey}}</label><br>
+    {% endfor %}
+    <br>
+    <input type="submit" value="submit">
+</form>
+{% endblock %}
