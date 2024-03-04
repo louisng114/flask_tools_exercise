@@ -6,6 +6,6 @@
 <p>Thank you for completing the survey!</p>
 <p>Your responses were:</p>
 {% for num in range %}
-<b>{{survey.questions[num].question}}</b> {{response[num]}}<br>
+<b>{{survey.questions[num].question}}</b> {{session[responses_loc][num]}}<br>
 {% endfor %}
 {% endblock %}

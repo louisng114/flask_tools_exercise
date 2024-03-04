@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, flash
+from flask import Flask, request, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import Question, Survey, surveys
 
@@ -6,8 +6,6 @@ app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "123"
 debug = DebugToolbarExtension(app)
-
-response = []
 
 @app.route("/")
 def home():
@@ -24,20 +22,26 @@ def survey_title(survey):
 
 @app.route("/questions/<survey>/<int:question_num>")
 def questions_page(survey, question_num):
-    if len(response) == len(surveys[survey].questions):
+    responses_loc = f"{survey}_responses"
+    responses = session.get(responses_loc, [])
+    if len(responses) == len(surveys[survey].questions):
         return redirect(f"/thankyou/{survey}")
-    if question_num != len(response):
+    if question_num != len(responses):
         flash("Invalid URL!")
-        return redirect(f"/questions/{survey}/{len(response)}")
+        return redirect(f"/questions/{survey}/{len(responses)}")
     question = surveys[survey].questions[question_num]
     return render_template("question.html", question=question, num=question_num)
 
 @app.route("/questions/<survey>/<int:question_num>", methods=["post"])
 def save_answer(survey,question_num):
     answer = request.form
-    response.append(answer["choices"])
+    responses_loc = f"{survey}_responses"
+    responses = session.get(responses_loc,[])
+    responses.append(answer["choices"])
+    session[responses_loc] = responses
     return redirect(f"/questions/{survey}/{str(question_num + 1)}")
     
 @app.route("/thankyou/<survey>")
 def thank_you(survey):
-    return render_template("thank_you.html", survey=surveys[survey], response=response, range=range(len(surveys[survey].questions)))
+    responses_loc = f"{survey}_responses"
+    return render_template("thank_you.html", survey=surveys[survey], responses_loc=responses_loc, range=range(len(surveys[survey].questions)))
